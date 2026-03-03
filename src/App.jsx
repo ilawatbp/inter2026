@@ -1,6 +1,7 @@
 import Home from './pages/Home'
 import ItemsPage from './pages/ItemsPage';
 import CartPage from './components/cart/CartPage'
+import PrestigePage from './pages/PretigePage';
 import { Routes, Route } from "react-router-dom";
 
 function App() {
@@ -11,6 +12,7 @@ function App() {
       <Route path="/" element={<Home />} />
       <Route path="/query" element={<ItemsPage />} />
       <Route path="/cart" element={<CartPage />} />
+      <Route path="/prestige" element={<PrestigePage />} />
     </Routes>
     </div>
   )

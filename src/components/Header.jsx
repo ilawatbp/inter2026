@@ -1,5 +1,5 @@
 import SearchBar from "./SearchBar";
-import { ShoppingBasket } from "lucide-react";
+import { ShoppingBag } from "lucide-react";
 import logo from "../assets/logo.png";
 
 import { useShop } from "../context/ShopContext";
@@ -36,8 +36,8 @@ export default function Header() {
                 <div className={`relative transition-all duration-300 ease-in-out`}
                     onClick={() => navigate(`/cart`)}
                 >
-                    <ShoppingBasket className="w-8 h-8" />
-                    <div className="absolute top-[-4px] right-[-8px] bg-red-500/90 h-4 w-4 rounded-full overflow-hidden text-xs text-white flex justify-center items-center">{cartValue.length}</div>
+                    <ShoppingBag className="w-5 h-5" />
+                    <div className="absolute top-[-8px] right-[-8px] bg-red-500/90 h-4 w-4 rounded-full overflow-hidden text-[8px] text-white flex justify-center items-center">{cartValue.length}</div>
                 </div>
             </div>
         </div>
