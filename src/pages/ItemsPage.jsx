@@ -1,200 +1,185 @@
-import { ShoppingBasket } from "lucide-react";
-import { PhilippinePeso } from "lucide-react";
-import notavail from "../assets/notavail.webp";
-import { useState, useEffect } from "react";
-import Modal from "../components/Modal";
-
+import { useEffect, useMemo, useState, useCallback, memo } from "react";
 import { useSearchParams } from "react-router-dom";
+import { ShoppingBag, PhilippinePeso } from "lucide-react";
 
 import Header from "../components/Header";
+import Modal from "../components/Modal"; // the “proper modal” component (portal + unmount when closed)
+import notavail from "../assets/notavail.webp";
+import ModalCart from "../components/ModalCart";
+
+const API_URL = import.meta.env.VITE_API_URL ?? "http://192.168.1.100:3001";
+
+/** ✅ Card extracted + memoized to reduce re-renders */
+const ItemCard = memo(function ItemCard({ itm, onOpen, onAddToCart }) {
+  return (
+    <div
+      onClick={() => onOpen(itm)}
+      className="
+        rounded-2xl overflow-hidden flex flex-col gap-2
+        w-full md:w-[calc(50%-10px)] lg:w-[calc(33%-10px)] xl:w-[calc(25%-20px)] 2xl:w-[calc(20%-20px)]
+        mb-10 relative
+      "
+      style={{ contentVisibility: "auto", containIntrinsicSize: "300px 420px" }}
+    >
+      {/* Fixed height prevents layout shifting while images load */}
+      <div className="bg-[#c8c6c6] rounded-2xl overflow-hidden shadow-md"> {/*add height if you want fix height every card  h-64 */}
+        <img
+          decoding="async"
+          loading="lazy"
+          src={`${API_URL}/images/${itm.ItemCode}.webp`}
+          alt={itm.ItemName}
+          onError={(e) => {
+            const img = e.currentTarget;
+
+            // retry once
+            if (!img.dataset.retried) {
+              img.dataset.retried = "1";
+              img.src = `${API_URL}/images/${itm.ItemCode}.webp?retry=${Date.now()}`;
+              return;
+            }
+            img.onerror = null;
+            img.src = notavail;
+          }}
+          className="w-full h-full object-cover"
+        />
+      </div>
+
+      <div className="rounded-2xl px-6 flex flex-col gap-1 mb-2">
+        <p className="truncate">{itm.ItemName}</p>
+
+        <div className="flex items-center gap-1">
+          <PhilippinePeso className="h-3 w-3" />
+          <p>{itm.Price.toLocaleString()}</p>
+        </div>
+        <div
+          className="flex justify-end items-center"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <ShoppingBag
+            className="text-[#3cb54c] cursor-pointer h-5 w-5 "
+            onClick={() => onAddToCart(itm)}
+          />
+        </div>
+      </div>
+    </div>
+  );
+});
 
 export default function ItemsPage() {
-  const [modalOpen, setModalOpen] = useState(false);
-  const [selectedItem, setSelectedItem] = useState({});
-  const [modalToCart, setModalToCart] = useState(false);
-
-
-  const [items, setItems] = useState([]);
-  const [error, setError] = useState(null);
-
   const [searchParams] = useSearchParams();
   const query = searchParams.get("q");
   const groupQuery = searchParams.get("group");
 
-  function handleShowMore(index) {
-    setModalOpen(true);
-    setSelectedItem(index);
-  }
+  const [items, setItems] = useState([]);
+  const [error, setError] = useState(null);
 
-  function handleModalToCard(index) {
-    setModalToCart(true);
-    setModalOpen(false);
-    setSelectedItem(index);
-  }
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [openItemModal, setOpenItemModal] = useState(false);
+  const [openCartModal, setOpenCartModal] = useState(false);
 
-  const API_URL = import.meta.env.VITE_API_URL ?? "http://192.168.1.100:3001";
+  // ✅ One “effective” search value: query OR group
+  const requestUrl = useMemo(() => {
+    if (query) return `${API_URL}/api/db2/items?q=${encodeURIComponent(query)}`;
+    if (groupQuery) return `${API_URL}/api/db2/items?group=${encodeURIComponent(groupQuery)}`;
+    return null;
+  }, [query, groupQuery]);
 
-
-
-  // Fetch whenever URL query changes
   useEffect(() => {
     const controller = new AbortController();
-    if (!query) return;
+    if (!requestUrl) {
+      setItems([]);
+      return;
+    }
 
     (async () => {
       try {
-        const response = await fetch(`${API_URL}/api/db2/items?q=${query}`, {
-          signal: controller.signal
-        });
-        if (!response.ok) { throw new Error("failed api"); }
-        const data = await response.json();
-        setItems(data)
-
+        const response = await fetch(requestUrl, { signal: controller.signal });
+        if (!response.ok) throw new Error("failed api");
+        setItems(await response.json());
       } catch (err) {
         if (err.name !== "AbortError") setError(err.message);
       }
     })();
+
     return () => controller.abort();
-  }, [query, API_URL]);
+  }, [requestUrl]);
 
   useEffect(() => {
-    const controller = new AbortController();
-    if (!groupQuery) return;
-
-    ( async () => {
-      try {
-        const response = await fetch(`${API_URL}/api/db2/items?group=${groupQuery}`,{ signal: controller.signal });
-        if (!response.ok) throw new Error("failed api");
-        const data = await response.json();
-        setItems(data)
-
-      } catch (err) {
-        if (err.name !== "AbortError") {
-          setError(err.message);
-        }
-      }
-    })();
-
-  }, [groupQuery]);
-
-
-  useEffect(() => {
-    if (error) {
-      alert(error);
-    }
+    if (error) alert(error);
   }, [error]);
 
+  const handleOpen = useCallback((itm) => {
+    setSelectedItem(itm);
+    setOpenItemModal(true);
+  }, []);
+
+  const handleAddToCart = useCallback((itm) => {
+    setSelectedItem(itm);
+    setOpenCartModal(true);
+    console.log("Add to cart:", itm.ItemCode);
+  }, []);
+
   return (
-    <div className="h-[100vh] w-full overflow-auto scrollbar-hide">
-      <Header></Header>
+    <div className="h-dvh w-full overflow-hidden flex flex-col">
+      <Header />
 
-      <div className={`fixed transition-all duration-200 ease-in ${modalToCart ? "opacity-1 z-50" : "opacity-0 z-0"}`}>
-        <Modal propshow={setModalToCart} selectedItem={selectedItem}></Modal>
-      </div>
-
-      {/* modal div */}
-      <div
-        className={`fixed w-full min-h-dvh top-0 bg-black/80 flex justify-center items-center 
-        ${modalOpen ? "opacity-1 z-50" : "opacity-0 z-0"}
-        transition-all duration-200 ease-in
-        `}
-        onClick={() => setModalOpen(false)}
-      >
-        <div
-          className="w-[40%] bg-[#e7e5e5] px-4 py-10 rounded-2xl flex flex-col items-center"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <img
-            src={`${API_URL}/images/${selectedItem.ItemCode}.webp`}
-            alt=""
-            className=" rounded-2xl"
-          />
-          <div className="flex-[1] rounded-2xl w-full  px-6 flex flex-col justify-center mt-2 gap-1">
-            <h4 className=" w-1/4 text-xs">{selectedItem.ItemCode}</h4>
-            <p className=" ">{selectedItem.ItemName}</p>
-            <div className=" w-1/2 flex items-center">
-              <PhilippinePeso className="h-[0.75rem] w-[0.75rem]" />
-              <p>{selectedItem.Price}</p>
-            </div>
-
-            <div className="flex justify-end gap-4 items-center">
-              <ShoppingBasket
-                className="text-[#3cb54c] cursor-pointer"
-                onClick={() => handleModalToCard(selectedItem)}
-              />
-              {/* hover:-translate-y-1 */}
-            </div>
-          </div>
+      {/* ✅ Only the list scrolls (header stays stable) */}
+      <div className="flex-1 overflow-auto scrollbar-hide">
+        <div className="w-full px-20 py-4 pt-36 flex gap-4 flex-wrap justify-evenly">
+          {items.map((itm) => (
+            <ItemCard
+              key={itm.ItemCode}
+              itm={itm}
+              onOpen={handleOpen}
+              onAddToCart={handleAddToCart}
+            />
+          ))}
         </div>
       </div>
 
-      {/* items card */}
-      <div
-        className={`w-full px-20 py-4 flex gap-4 flex-wrap justify-evenly pt-36 z-0`}
-      >
-        {items.map((itm, index) => (
+      {/* ✅ Modal is mounted ONLY when open (no invisible overlay blocking scroll) */}
+      <Modal open={openItemModal} onClose={() => setOpenItemModal(false)}>
+        {selectedItem && (
+          <div className="flex flex-col items-center gap-3">
+            <img
+              decoding="async"
+              loading="lazy"
+              src={`${API_URL}/images/${selectedItem.ItemCode}.webp`}
+              alt={selectedItem.ItemName}
+              onError={(e) => {
+                const img = e.currentTarget;
 
-          <div
-            key={index}
-            onClick={() => handleShowMore(itm)}
-            className={`
-                      h-[40%] rounded-2xl overflow-hidden flex flex-col gap-2
-                      w-full md:w-[calc(50%-10px)] lg:w-[calc(33%-10px)] xl:w-[calc(25%-20px)] 2xl:w-[calc(20%-20px)]
-                      mb-10 
-                      transform transition-transform duration-300 ease-out relative  
-                      `}
-
-          // hover effect :  hover:scale-105 hover:z-10
-          >
-            <div className="bg-[#c8c6c6] flex-[5] rounded-2xl overflow-hidden shadow-md">
-<img
-  decoding="async"
-  loading="lazy"
-  src={`${API_URL}/images/${itm.ItemCode}.webp`}
-  alt={itm.ItemName}
-  onError={(e) => {
-    const img = e.currentTarget;
-
-    // retry once
-    if (!img.dataset.retried) {
-      img.dataset.retried = "1";
-      img.src = `${API_URL}/images/${itm.ItemCode}.webp?retry=${Date.now()}`;
-      return;
-    }
-
-    // fallback
-    img.onerror = null;
-    img.src = notavail;
-  }}
-  className="w-full h-full object-cover"
-/>
-            </div>
-
-            <div className="flex-[1] rounded-2xl px-6 flex flex-col justify-evenly gap-1 mb-2">
-              <h4 className="flex-1 w-1/4 text-xs">{itm.ItemCode}</h4>
-              <p className="flex-1 truncate">{itm.ItemName}</p>
-              <div className="flex-1 w-1/2 flex items-center">
-                <PhilippinePeso className="h-[0.75rem] w-[0.75rem]" />
-                <p>{itm.Price}</p>
-              </div>
-
-              <div
-                className="flex justify-end gap-4 items-center"
-                onClick={(e) => {
-                  e.stopPropagation();
-                }}
-              >
-                <ShoppingBasket
-                  className="text-[#3cb54c]  cursor-pointer"
-                  onClick={() => handleModalToCard(itm)}
+                // retry once
+                if (!img.dataset.retried) {
+                  img.dataset.retried = "1";
+                  img.src = `${API_URL}/images/${selectedItem.ItemCode}.webp?retry=${Date.now()}`;
+                  return;
+                }
+                img.onerror = null;
+                img.src = notavail;
+              }}
+              className="rounded-2xl max-h-[60vh] object-cover"
+            />
+            <div className="w-full px-2">
+              <h4 className="text-xs text-neutral-600">{selectedItem.ItemCode}</h4>
+              <p className="text-lg font-semibold">{selectedItem.ItemName}</p>
+              <div className="mt-10 flex items-center justify-center">
+                <PhilippinePeso className="h-4 w-4" />
+                <p>{selectedItem.Price.toLocaleString()}</p>
+                <ShoppingBag
+                  className="text-[#3cb54c] cursor-pointer ml-auto h-5 w-5"
+                  onClick={() => { setOpenItemModal(false); handleAddToCart(selectedItem) }}
                 />
-                {/* see more button */}
-                {/* hover:-translate-y-1 */}
               </div>
+
             </div>
           </div>
-        ))}
-      </div>
+        )}
+      </Modal>
+
+      <Modal open={openCartModal} onClose={() => setOpenCartModal(false)}>
+        <ModalCart propshow={setOpenCartModal} selectedItem={selectedItem}></ModalCart>
+      </Modal>
     </div>
   );
 }
