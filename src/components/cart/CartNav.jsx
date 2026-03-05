@@ -1,82 +1,120 @@
+import { House, Save, BrushCleaning } from "lucide-react";
 import { useShop } from "../../context/ShopContext"
 import { useNavigate } from "react-router-dom";
+import Modal from "../Modal";
+import { useRef, useState } from "react";
 
-export default function CartNav(){
+export default function CartNav({ setCartView, cartView }) {
 
   const navigate = useNavigate();
+  const [openDiscountModal, setOpenDiscountModal] = useState();
+  const discountValue = useRef();
 
-  const {setView, submitQuote} = useShop();
+  const { cartValue, quoteDetails, setCartValue, setQuoteDetails, defaultQuoteDetails } = useShop();
 
-  
+  //POST http://localhost:3001/api/qinfo
 
-    return(
-              <nav className="bg-[#3b4044] shadow-md text-white">
+  async function submitQuote() {
+    const payload = {
+      qn: quoteDetails.qn,       // header auth/client info
+      qinfo: quoteDetails.qinfo, // quote info
+      items: cartValue        // array of items
+    };
+
+    try {
+      const res = await fetch("http://192.168.1.100:3001/api/insertQ", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data?.error || "Insert failed");
+      }
+
+      // ✅ success
+      console.log("Inserted QNO:", data.QNO);
+      console.log("Inserted items:", data.insertedItems);
+      alert(`Saved! QNO: ${data.QNO}`);
+    } catch (err) {
+      console.error(err);
+      alert(err.message);
+    }
+  }
+
+
+  function clearAll() {
+    setCartValue([]);
+    setQuoteDetails(structuredClone(defaultQuoteDetails));
+
+    localStorage.setItem("cartValue", JSON.stringify([]));
+    localStorage.setItem("quoteDetails", JSON.stringify(defaultQuoteDetails));
+
+    window.location.reload();
+  }
+
+  const handleOpenDiscout = () => {
+    setOpenDiscountModal(true);
+  };
+
+  function handleDiscount() {
+    setCartValue((prev) =>
+      prev.map((item) => ({
+        ...item, Discount: discountValue.current.value
+      }))
+    )
+    setOpenDiscountModal(false)
+  }
+
+
+
+
+
+  return (
+    <>
+      <nav className="bg-[#3b4044] shadow-md text-white">
         <div className="mx-auto max-w-6xl px-4 md:px-10 py-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           {/* LEFT */}
-          <div className="flex flex-wrap items-center gap-2">
-            <button
-              type="button"
-              className="border border-green-500 rounded-full px-4 py-2 hover:bg-green-500 transition"
-              onClick={() => navigate(`/`)}
-            >
-              Home
-            </button>
-
-            <button
-              type="button"
-              className="border border-green-500 rounded-full px-4 py-2 hover:bg-green-500 transition"
-            >
-              Discount All
-            </button>
-
-            {/* Discount Toggle */}
-            <div className="flex items-center border border-green-500 rounded-full px-4 py-2">
-              <p className="mr-3 text-white">Discount</p>
-
-              <label className="relative inline-flex items-center cursor-pointer">
-                {/* peer must be sibling of the track */}
-                <input type="checkbox" className="sr-only peer" />
-
-                {/* Track */}
-                <div className="w-10 h-5 rounded-full bg-gray-200 peer-checked:bg-green-500 transition-colors relative">
-                  {/* Knob (no peer-checked here; animate using group on track via after) */}
-                  <div className="absolute top-0.5 left-0.5 h-4 w-4 rounded-full bg-green-700 peer-checked:bg-white peer-checked:translate-x-5 transition-all" />
-                </div>
-              </label>
-            </div>
-          </div>
-
-          {/* RIGHT */}
-          <div className="flex flex-wrap justify-start md:justify-end gap-2">
-            <button
-              type="button"
-              className="border border-green-500 rounded-full px-4 py-2 hover:bg-green-500 transition"
-            >
+          <div className="flex items-center gap-2">
+            <House onClick={() => navigate(`/`)} strokeWidth={1.5} className="hover:text-green-500 scale-110 " />
+            <button type="button" className="rounded-full px-4 py-2 hover:bg-green-500 transition">
               Service Form
             </button>
 
-            <button
-              type="button"
-              className="border border-green-500 rounded-full px-4 py-2 hover:bg-green-500 transition"
+            <button type="button" className="rounded-full px-4 py-2 hover:bg-green-500 transition"
+              onClick={() => setCartView(cartView === "form" ? "history" : "form")}
             >
-              Quotation History
+              {cartView == "form" ? "Quotation History" : "Quotation Form"}
             </button>
+            <button type="button" className="rounded-full px-4 py-2 hover:bg-green-500 transition"
+              onClick={handleOpenDiscout}
+            >
+              Discount All
+            </button>
+          </div>
 
-            <button
-              type="button"
-              className="border border-green-500 rounded-full px-4 py-2 hover:bg-green-500 transition"
-              onClick={submitQuote}
-            >
-              Save
-            </button>
-            <button
-              type="button"
-              className="border border-green-500 rounded-full px-4 py-2 hover:bg-green-500 transition"
-            >
-              Clear All
-            </button>
+
+          {/* RIGHT */}
+          <div className="flex items-center gap-2 ">
+            <BrushCleaning onClick={clearAll} strokeWidth={1.5} />
+            <Save
+              onClick={async () => {
+                await submitQuote();
+                clearAll();
+              }}
+              strokeWidth={1.5} />
           </div>
         </div>
       </nav>
-    )
+      <Modal open={openDiscountModal} onClose={() => setOpenDiscountModal(false)}>
+        <div className="flex flex-col">
+          Discount
+          <input type="number" className="w-full h-10 rounded-2xl border border-black px-4 mt-4" ref={discountValue} />
+          <button className="bg-green-500 w-36 h-8 rounded-2xl ml-auto text-white mt-4" onClick={handleDiscount}>Ok</button>
+        </div>
+      </Modal>
+    </>
+  )
 }

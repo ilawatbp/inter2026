@@ -57,6 +57,7 @@ const [quoteDetails, setQuoteDetails] = useState(() => {
   }
 });
 
+
 // Persist quote details
 useEffect(() => {
   localStorage.setItem("quoteDetails", JSON.stringify(quoteDetails));
@@ -65,13 +66,11 @@ useEffect(() => {
 // details saves to state when input values for customer detail changes
 function handleCustomerDetailsOnchange(section, field, value) {
   setQuoteDetails(prev => ({ ...prev, [section]:{...prev[section], [field]: value} }));
-
-  console.log(quoteDetails)
 }
 
 
 return (
-  <ShopContext.Provider value={{view, setView, cartValue, setCartValue,quoteDetails, setQuoteDetails, handleCustomerDetailsOnchange}}>{children}</ShopContext.Provider>
+  <ShopContext.Provider value={{view, setView, defaultQuoteDetails, cartValue, setCartValue,quoteDetails, setQuoteDetails, handleCustomerDetailsOnchange}}>{children}</ShopContext.Provider>
 );
 }
 

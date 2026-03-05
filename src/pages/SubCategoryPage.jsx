@@ -5,7 +5,6 @@ import categories from "../data/categories";
 export default function SubCategoryPage({subCategValue, setSubCategValue}) {
 
 const cname = subCategValue;
-    console.log(cname);
     return (
         <div
             className={`max-w-6xl mx-auto px-4 py-10 flex flex-wrap justify-center items-center gap-6 

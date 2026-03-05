@@ -26,7 +26,7 @@ export default function ItemTable({p, openDelModal, calculatePrice}){
 
                       {/* Quantity */}
                       <td className="py-2 text-center align-middle">
-                        <input type="number" min="1" className="text-center w-[50px] border-b p-2" defaultValue={Number(p.Quantity)}
+                        <input type="number" min="1" className="text-center w-[50px] border-b p-2" value={Number(p.Quantity ?? 1)}
                                 onChange={(e)=> handleChange(p.uid, "Quantity", e.target.value )}
                         />
                       </td>
@@ -55,7 +55,7 @@ export default function ItemTable({p, openDelModal, calculatePrice}){
 
                       {/* DISCOUNT */}
                       <td className="py-2 text-right align-middle">
-                        <input type="number" min="0" max="100" className="text-center border-b w-[50px] p-2" defaultValue={Number(p.Discount)}
+                        <input type="number" min="0" max="100" className="text-center border-b w-[50px] p-2" value={Number(p.Discount ?? 0)}
                         onChange={(e)=> handleChange(p.uid, "Discount", e.target.value )}
                         />
                       </td>

@@ -108,7 +108,7 @@ export default function PrestigePage() {
                             </dl>
                         </div>
                         <div>
-                            <button>Add To Cart</button>
+                            <button>Add To Ca</button>
                         </div>
                     </div>
                 </div>
