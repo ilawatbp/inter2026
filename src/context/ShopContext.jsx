@@ -5,6 +5,14 @@ export function ShopProvider({ children }) {
 
 const [view, setView] = useState("");
 
+const [quoteNum, setQuoteNum] = useState("-");
+
+const [quoteStatus, setQuoteStatus] = useState("draft");
+// statuses{
+//   -locked
+//   -draft
+// }
+
 const [cartValue, setCartValue] = useState(() => {
   try {
     return JSON.parse(localStorage.getItem("cartValue")) || [];
@@ -70,7 +78,7 @@ function handleCustomerDetailsOnchange(section, field, value) {
 
 
 return (
-  <ShopContext.Provider value={{view, setView, defaultQuoteDetails, cartValue, setCartValue,quoteDetails, setQuoteDetails, handleCustomerDetailsOnchange}}>{children}</ShopContext.Provider>
+  <ShopContext.Provider value={{view, setView, defaultQuoteDetails, cartValue, setCartValue,quoteDetails, setQuoteDetails, handleCustomerDetailsOnchange, quoteNum, setQuoteNum, quoteStatus, setQuoteStatus}}>{children}</ShopContext.Provider>
 );
 }
 

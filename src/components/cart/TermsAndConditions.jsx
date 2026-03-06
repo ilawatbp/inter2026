@@ -1,7 +1,7 @@
 import { useShop } from "../../context/ShopContext";
 export default function TermsAndConditions() {
 
-    const {handleCustomerDetailsOnchange, quoteDetails } = useShop();
+    const {handleCustomerDetailsOnchange, quoteDetails, quoteStatus } = useShop();
 
   return (
     <section className="mt-6 text-[10px] leading-tight">
@@ -63,9 +63,10 @@ export default function TermsAndConditions() {
         {/* 5 */}
         <div className="grid grid-cols-[190px_1fr] gap-4">
           <div className="font-semibold">5. Delivery Lead Time:</div>
-          <input type="text" className="bg-gray-200/60 px-2 h-4" 
+          <input type="text" className={`px-2 h-4 ${quoteStatus ==="locked" ? "bg-white" : "bg-gray-200/60"}`} 
           onChange={(e)=> handleCustomerDetailsOnchange('qinfo', 'leadTime', e.target.value)}
           defaultValue = {quoteDetails.qinfo?.leadTime}
+          disabled={quoteStatus ==="locked"}
           />
           
           <div >
@@ -91,9 +92,10 @@ export default function TermsAndConditions() {
         {/* 8 */}
         <div className="grid grid-cols-[190px_1fr] gap-4">
           <div className="font-semibold">8. Warranty:</div>
-          <input type="text" className="bg-gray-200/60 px-2 h-4" 
+          <input type="text" className={`px-2 h-4 ${quoteStatus ==="locked" ? "bg-white" : "bg-gray-200/60"}`} 
           onChange={(e)=> handleCustomerDetailsOnchange('qinfo', 'warranty', e.target.value)}
           defaultValue = {quoteDetails.qinfo?.warranty}
+          disabled={quoteStatus ==="locked"}
           />
         </div>
       </div>

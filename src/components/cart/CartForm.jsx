@@ -7,9 +7,9 @@ import { useShop } from "../../context/ShopContext";
 import { useRef, useState } from "react";
 
 
-export default function CartForm() {
+export default function CartForm({printRef}) {
 
-    const { cartValue, setCartValue, handleCustomerDetailsOnchange, quoteDetails } = useShop();
+    const { cartValue, setCartValue, handleCustomerDetailsOnchange, quoteDetails, quoteNum, quoteStatus } = useShop();
     const [pendingDeleteUid, setPendingDeleteUid] = useState(null)
 
     const delItemModal = useRef()
@@ -48,7 +48,7 @@ export default function CartForm() {
 
     return (
         <>
-            <main className="max-w-[8.5in] mx-auto bg-white shadow-lg mt-6 p-6 md:p-10 rounded-xl">
+            <main ref={printRef} className="max-w-[8.5in] mx-auto bg-white mt-6 p-6 md:p-10 rounded-xl">
                 {/* Header Part */}
                 <section className="flex flex-row mb-2">
                     <div className="flex-1">
@@ -85,9 +85,10 @@ export default function CartForm() {
                                     <input
                                         name={f.name}
                                         type="text"
-                                        className="flex-1 h-4 bg-gray-200/60 outline-none px-1"
+                                        className={`flex-1 h-4  outline-none px-1 ${quoteStatus ==="locked" ? "bg-white" : "bg-gray-200/60"}`}
                                         defaultValue={quoteDetails.qinfo?.[f.name] || ""}
                                         onChange={(e) => handleCustomerDetailsOnchange('qinfo', f.name, e.target.value)}
+                                        disabled={quoteStatus ==="locked"}
                                     />
                                 </div>
                             ))}
@@ -105,7 +106,8 @@ export default function CartForm() {
                                         handleCustomerDetailsOnchange("qinfo", "frName", e.target.value);
                                     }}
                                     defaultValue={quoteDetails.qinfo?.frName || ""}
-                                    className="flex-1 h-4 bg-gray-200/60 outline-none px-1"
+                                    className={`flex-1 h-4 outline-none px-1 ${quoteStatus ==="locked" ? "bg-white" : "bg-gray-200/60"}`}
+                                    disabled={quoteStatus ==="locked"}
                                 />
                             </div>
 
@@ -130,7 +132,7 @@ export default function CartForm() {
                                     name="date"
                                     type="text"
                                     defaultValue="02/11/2026"
-                                    className="flex-1 h-4 px-1 outline-none "
+                                    className="flex-1 h-4 px-1 outline-none bg-white"
                                     disabled
                                 />
                             </div>
@@ -140,7 +142,8 @@ export default function CartForm() {
                                 <input
                                     name="quotationNo"
                                     type="text"
-                                    className="flex-1 h-4 px-1 outline-none"
+                                    className="flex-1 h-4 px-1 outline-none bg-white"
+                                    value={quoteNum}
                                     disabled
                                 />
                             </div>
@@ -150,7 +153,8 @@ export default function CartForm() {
                                 <input
                                     name="validUntil"
                                     type="date"
-                                    className="flex-1 h-4 px-1 outline-none bg-gray-200/60"
+                                    className={`flex-1 h-4 px-1 outline-none ${quoteStatus ==="locked" ? "bg-white" : "bg-gray-200/60"}`}
+                                    disabled={quoteStatus ==="locked"}
                                 />
                             </div>
                         </div>
@@ -180,7 +184,8 @@ export default function CartForm() {
                                     <th className="py-1 font-semibold text-left w-[70px]">Discount</th>
                                     <th className="py-1 font-semibold text-right w-[70px]">SRP</th>
                                     <th className="py-1 font-semibold text-right w-[70px]">Total</th>
-                                    <th className="py-1 w-[30px]"></th>
+                                    {quoteStatus !== "locked" ? (<th className="py-1 w-[30px]"></th>): (<th className="py-1 w-[10px]"></th>)}
+                                    
                                 </tr>
                             </thead>
 
@@ -198,20 +203,22 @@ export default function CartForm() {
                             <div className="w-[110px] text-right font-semibold">{totalAmount}</div>
                         </div>
 
-                        <div className="flex justify-between pl-4 pr-2 items-center gap-6 border-b border-black py-2 text-[10px]">
+                        <div className="flex justify-between pl-4 items-center gap-6 border-b border-black py-2 text-[10px]">
                             <div className="font-semibold">Delivery Charges</div>
-                            <input type="number" min="0" className="w-[110px] text-right font-semibold bg-gray-200/60 px-2"
+                            <input type="number" min="0" className={`w-[110px] text-right font-semibold ${quoteStatus ==="locked" ? "bg-white" : "bg-gray-200/60 px-2 "}`}
                                 onChange={(e) => handleCustomerDetailsOnchange('qinfo', 'del_charge', e.target.value.toString())}
                                 defaultValue={Number(quoteDetails.qinfo?.del_charge)}
+                                disabled={quoteStatus ==="locked"}
                             />
 
                         </div>
 
-                        <div className="flex justify-between pl-4 pr-2 items-center gap-6 border-b border-black py-2 text-[10px]">
+                        <div className="flex justify-between pl-4 items-center gap-6 border-b border-black py-2 text-[10px]">
                             <div className="font-semibold">Installation Charges</div>
-                            <input type="number" min="0" className="w-[110px] text-right font-semibold bg-gray-200/60 px-2"
+                            <input type="number" min="0" className={`w-[110px] text-right font-semibold ${quoteStatus ==="locked" ? "bg-white" : "bg-gray-200/60 px-2"}`}
                                 onChange={(e) => handleCustomerDetailsOnchange('qinfo', 'ins_charge', e.target.value.toString())}
                                 defaultValue={Number(quoteDetails.qinfo?.ins_charge)}
+                                disabled={quoteStatus ==="locked"}
                             />
                         </div>
 

@@ -1,16 +1,18 @@
-import { House, Save, BrushCleaning } from "lucide-react";
+import { House, Save, BrushCleaning, Printer } from "lucide-react";
 import { useShop } from "../../context/ShopContext"
 import { useNavigate } from "react-router-dom";
 import Modal from "../Modal";
 import { useRef, useState } from "react";
+import { useReactToPrint } from "react-to-print";
 
-export default function CartNav({ setCartView, cartView }) {
+export default function CartNav({ setCartView, cartView, printRef }) {
 
   const navigate = useNavigate();
   const [openDiscountModal, setOpenDiscountModal] = useState();
   const discountValue = useRef();
 
-  const { cartValue, quoteDetails, setCartValue, setQuoteDetails, defaultQuoteDetails } = useShop();
+  const { cartValue, quoteDetails, setCartValue, setQuoteDetails, defaultQuoteDetails, setQuoteNum, quoteStatus, setQuoteStatus } = useShop();
+  console.log(quoteDetails)
 
   //POST http://localhost:3001/api/qinfo
 
@@ -35,6 +37,7 @@ export default function CartNav({ setCartView, cartView }) {
       }
 
       // ✅ success
+      setQuoteNum(data.QNO);
       console.log("Inserted QNO:", data.QNO);
       console.log("Inserted items:", data.insertedItems);
       alert(`Saved! QNO: ${data.QNO}`);
@@ -68,7 +71,19 @@ export default function CartNav({ setCartView, cartView }) {
     setOpenDiscountModal(false)
   }
 
+  const lastSavedQno = "last"
 
+
+  const handlePrint = useReactToPrint({
+    contentRef: printRef,
+    documentTitle: lastSavedQno ? `Quotation-${lastSavedQno}` : "Quotation",
+    pageStyle: `
+      @page { size: letter; margin: 12mm; }
+      @media print {
+        body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      }
+    `,
+  });
 
 
 
@@ -78,33 +93,65 @@ export default function CartNav({ setCartView, cartView }) {
         <div className="mx-auto max-w-6xl px-4 md:px-10 py-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           {/* LEFT */}
           <div className="flex items-center gap-2">
-            <House onClick={() => navigate(`/`)} strokeWidth={1.5} className="hover:text-green-500 scale-110 " />
-            <button type="button" className="rounded-full px-4 py-2 hover:bg-green-500 transition">
-              Service Form
-            </button>
+            <House
+              onClick={() => {
+                if (quoteStatus === "locked") {
+                  navigate(`/`);
+                  clearAll();
+                } else {
+                  navigate(`/`);
+                }
+              }}
+              strokeWidth={1.5} className="hover:text-green-500 scale-110 " />
 
-            <button type="button" className="rounded-full px-4 py-2 hover:bg-green-500 transition"
-              onClick={() => setCartView(cartView === "form" ? "history" : "form")}
-            >
-              {cartView == "form" ? "Quotation History" : "Quotation Form"}
-            </button>
-            <button type="button" className="rounded-full px-4 py-2 hover:bg-green-500 transition"
-              onClick={handleOpenDiscout}
-            >
-              Discount All
-            </button>
+            {quoteStatus !== "locked" && (
+              <>
+                <button type="button" className="rounded-full px-4 py-2 hover:bg-green-500 transition">
+                  Service Form
+                </button>
+
+                <button type="button" className="rounded-full px-4 py-2 hover:bg-green-500 transition"
+                  onClick={() => setCartView(cartView === "form" ? "history" : "form")}
+                >
+                  {cartView == "form" ? "Quotation History" : "Quotation Form"}
+                </button>
+                {cartView == "form" && (
+                  <button type="button" className="rounded-full px-4 py-2 hover:bg-green-500 transition"
+                    onClick={handleOpenDiscout}
+                  >
+                    Discount All
+                  </button>
+                )}
+
+              </>
+            )}
           </div>
 
-
-          {/* RIGHT */}
           <div className="flex items-center gap-2 ">
-            <BrushCleaning onClick={clearAll} strokeWidth={1.5} />
-            <Save
-              onClick={async () => {
-                await submitQuote();
-                clearAll();
-              }}
-              strokeWidth={1.5} />
+            {/* RIGHT */}
+            {quoteStatus !== "locked" && cartView == "form" && (
+              <>
+                <BrushCleaning onClick={clearAll} strokeWidth={1.5} />
+                <Save
+                  onClick={async () => {
+                    try {
+                      const data = await submitQuote();
+                      setQuoteStatus("locked")
+
+                    } catch (err) {
+                      alert(err.message)
+                    }
+                  }}
+                  strokeWidth={1.5} />
+              </>
+            )}
+             {quoteStatus === "locked" && cartView == "form" && (
+              <Printer onClick={handlePrint} strokeWidth={1.5}></Printer>
+            )}
+
+
+
+
           </div>
         </div>
       </nav>
@@ -118,3 +165,40 @@ export default function CartNav({ setCartView, cartView }) {
     </>
   )
 }
+
+
+
+
+
+
+
+// setQuoteDetails
+// {
+//   "qinfo": {
+//     "Attn": "",
+//     "Comp": "",
+//     "Desig": "",
+//     "Loc": "",
+//     "Proj": "",
+//     "Qdate": "",
+//     "del_charge": "0",
+//     "designationOfUser": "",
+//     "frName": "",
+//     "ins_charge": "0",
+//     "leadTime": "",
+//     "prepby": "",
+//     "validUntil": "",
+//     "warranty": ""
+//   },
+//   "qn": {
+//     "Discount": "Y",
+//     "authDesig": "",
+//     "authName": "",
+//     "cliBusNameSign": "-",
+//     "cliDesig": "",
+//     "cliName": "",
+//     "deptuser": "URP",
+//     "iduser": "37",
+//     "ilawBusNameSign": "-"
+//   }
+// }

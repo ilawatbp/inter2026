@@ -4,7 +4,7 @@ import { useShop } from "../../context/ShopContext";
                     // {id_no, quant, discount, price, ItemName, area, note}
 export default function ItemTable({p, openDelModal, calculatePrice}){
 
-    const {setCartValue} = useShop();
+    const {setCartValue, quoteStatus} = useShop();
       const API_URL = import.meta.env.VITE_API_URL ?? "http://192.168.1.100:3001";
 
     function handleChange(uid, field, value ){
@@ -26,8 +26,11 @@ export default function ItemTable({p, openDelModal, calculatePrice}){
 
                       {/* Quantity */}
                       <td className="py-2 text-center align-middle">
-                        <input type="number" min="1" className="text-center w-[50px] border-b p-2" value={Number(p.Quantity ?? 1)}
+                        <input type="number" min="1" 
+                        className={`text-center w-[50px] p-2 bg-white flex-1 h-4 bg-gray-200/60 outline-none px-1  ${quoteStatus !=="locked" && "border-b"}`} 
+                        value={Number(p.Quantity ?? 1)}
                                 onChange={(e)=> handleChange(p.uid, "Quantity", e.target.value )}
+                                disabled={quoteStatus ==="locked"}
                         />
                       </td>
 
@@ -37,8 +40,11 @@ export default function ItemTable({p, openDelModal, calculatePrice}){
                         <div className="mt-2">
                           {p.ItemName}
                         </div>
-                        <div className="mt-2">Area:  <input type="text" className="border-b w-full px-2" defaultValue={p.area}
+                        <div className="mt-2">Area:  
+                          <input type="text" className={`w-full px-2 bg-white ${quoteStatus !=="locked" && "border-b"}`} 
+                          defaultValue={p.area}
                              onChange={(e)=> handleChange(p.uid, "area", e.target.value )}
+                             disabled={quoteStatus ==="locked"}
                         />
                         </div>
                         {/* <div>Notes: <input type="text" className="border-b w-full" defaultValue={p.note} 
@@ -46,17 +52,20 @@ export default function ItemTable({p, openDelModal, calculatePrice}){
                         />
                         </div> */}
                         <div>Notes: 
-                            <textarea name="" id=""className="w-full border p-2"
+                            <textarea name="" id=""className={`w-full p-2  bg-white ${quoteStatus !=="locked" && "border"}`}
                              defaultValue={p.note} 
                               onChange={(e)=> handleChange(p.uid, "note", e.target.value )}
+                              disabled={quoteStatus ==="locked"}
                             ></textarea>
                         </div>
                       </td>
 
                       {/* DISCOUNT */}
                       <td className="py-2 text-right align-middle">
-                        <input type="number" min="0" max="100" className="text-center border-b w-[50px] p-2" value={Number(p.Discount ?? 0)}
+                        <input type="number" min="0" max="100" className={`text-center w-[50px] p-2  bg-white ${quoteStatus !=="locked" && "border-b"}`} 
+                        value={Number(p.Discount ?? 0)}
                         onChange={(e)=> handleChange(p.uid, "Discount", e.target.value )}
+                        disabled={quoteStatus ==="locked"}
                         />
                       </td>
 
@@ -71,6 +80,7 @@ export default function ItemTable({p, openDelModal, calculatePrice}){
                       </td>
 
                       {/* Actions */}
+                      {quoteStatus==="locked" ?? (
                       <td className="">
                         <div className="flex flex-col items-end gap-4">
                           <button
@@ -82,6 +92,8 @@ export default function ItemTable({p, openDelModal, calculatePrice}){
                           </button>
                         </div>
                       </td>
+                      )}
+
 
                     </tr>
     );
