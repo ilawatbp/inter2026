@@ -3,6 +3,9 @@ export default function TermsAndConditions() {
 
     const {handleCustomerDetailsOnchange, quoteDetails, quoteStatus } = useShop();
 
+    const diffInMs = new Date(quoteDetails.qinfo.validUntil) - new Date(quoteDetails.qinfo.Qdate);
+    const diffInDays = diffInMs / (1000 * 60 * 60 * 24);
+
   return (
     <section className="mt-6 text-[10px] leading-tight">
       <h2 className="font-semibold underline mb-3">Terms and Conditions</h2>
@@ -55,7 +58,7 @@ export default function TermsAndConditions() {
         <div className="grid grid-cols-[190px_1fr] gap-4">
           <div className="font-semibold">4. Validity Period:</div>
           <div>
-            This quotation is valid for Seven (7) days only. Kindly request a
+            This quotation is valid for Seven ({diffInDays}) days only. Kindly request a
             new quotation thereafter.
           </div>
         </div>

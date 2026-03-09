@@ -116,7 +116,6 @@ export default function ItemsPage() {
   const handleAddToCart = useCallback((itm) => {
     setSelectedItem(itm);
     setOpenCartModal(true);
-    console.log("Add to cart:", itm.ItemCode);
   }, []);
 
   return (

@@ -42,19 +42,16 @@ export default function ItemTable({p, openDelModal, calculatePrice}){
                         </div>
                         <div className="mt-2">Area:  
                           <input type="text" className={`w-full px-2 bg-white ${quoteStatus !=="locked" && "border-b"}`} 
-                          defaultValue={p.area}
-                             onChange={(e)=> handleChange(p.uid, "area", e.target.value )}
+                          defaultValue={p.Area}
+                             onChange={(e)=> handleChange(p.uid, "Area", e.target.value )}
                              disabled={quoteStatus ==="locked"}
                         />
                         </div>
-                        {/* <div>Notes: <input type="text" className="border-b w-full" defaultValue={p.note} 
-                                onChange={(e)=> handleChange(p.uid, "note", e.target.value )}
-                        />
-                        </div> */}
+                        
                         <div>Notes: 
                             <textarea name="" id=""className={`w-full p-2  bg-white ${quoteStatus !=="locked" && "border"}`}
-                             defaultValue={p.note} 
-                              onChange={(e)=> handleChange(p.uid, "note", e.target.value )}
+                             defaultValue={p.Rem} 
+                              onChange={(e)=> handleChange(p.uid, "Rem", e.target.value )}
                               disabled={quoteStatus ==="locked"}
                             ></textarea>
                         </div>
@@ -71,16 +68,21 @@ export default function ItemTable({p, openDelModal, calculatePrice}){
 
                       {/* SRP */}
                       <td className="py-2 text-right align-middle">
-                        {p.price}
+                        {Number(p.SRP).toLocaleString()}
                       </td>
 
                       {/* Total */}
                       <td className="py-2 text-right align-middle">
-                        {calculatePrice(p.Quantity, p.SRP, p.Discount).toFixed(2)}
+                        {
+                          Number(calculatePrice(p.Quantity, p.SRP, p.Discount)).toLocaleString("en-PH", {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          })
+                        }
                       </td>
 
                       {/* Actions */}
-                      {quoteStatus==="locked" ?? (
+                      {quoteStatus !=="locked" && (
                       <td className="">
                         <div className="flex flex-col items-end gap-4">
                           <button

@@ -15,9 +15,9 @@ export default function CartPage() {
         {/* MAIN CONTAINER */}
 
         {cartView == "form" ? (
-          <CartForm printRef={printRef}/>
+          <CartForm  printRef={printRef}/>
         ) : (
-          <CartHistory />
+          <CartHistory setCartView={setCartView} />
         )}
 
 

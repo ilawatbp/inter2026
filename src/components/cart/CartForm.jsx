@@ -9,10 +9,10 @@ import { useRef, useState } from "react";
 
 export default function CartForm({printRef}) {
 
-    const { cartValue, setCartValue, handleCustomerDetailsOnchange, quoteDetails, quoteNum, quoteStatus } = useShop();
+    const { cartValue, setCartValue, handleCustomerDetailsOnchange, quoteDetails, setQuoteDetails, quoteNum, quoteStatus } = useShop();
     const [pendingDeleteUid, setPendingDeleteUid] = useState(null)
 
-    const delItemModal = useRef()
+    const delItemModal = useRef();
 
 
     function calculatePrice(quantity, price, discount = 0) {
@@ -26,7 +26,7 @@ export default function CartForm({printRef}) {
         const itemTotal = calculatePrice(
             item.Quantity,
             item.SRP,
-            item.Discount
+            item.Discount   
         );
 
         return acc + itemTotal;
@@ -130,8 +130,8 @@ export default function CartForm({printRef}) {
                                 <div className="w-28 font-semibold" >DATE</div>
                                 <input
                                     name="date"
-                                    type="text"
-                                    defaultValue="02/11/2026"
+                                    type="date"
+                                    value={quoteDetails.qinfo.Qdate}
                                     className="flex-1 h-4 px-1 outline-none bg-white"
                                     disabled
                                 />
@@ -154,7 +154,17 @@ export default function CartForm({printRef}) {
                                     name="validUntil"
                                     type="date"
                                     className={`flex-1 h-4 px-1 outline-none ${quoteStatus ==="locked" ? "bg-white" : "bg-gray-200/60"}`}
+                                    value={quoteDetails.qinfo.validUntil}
                                     disabled={quoteStatus ==="locked"}
+                                        onChange={(e) =>
+                                        setQuoteDetails((prev) => ({
+                                            ...prev,
+                                            qinfo: {
+                                            ...prev.qinfo,
+                                            validUntil: e.target.value,
+                                            },
+                                        }))
+                                        }
                                 />
                             </div>
                         </div>
@@ -200,7 +210,10 @@ export default function CartForm({printRef}) {
                         {/* TOTAL FOOTER */}
                         <div className="flex justify-between px-4 items-center gap-6 border-b border-black py-2 text-[10px]">
                             <div className="font-semibold">Total Amount</div>
-                            <div className="w-[110px] text-right font-semibold">{totalAmount}</div>
+                            <div className="w-[110px] text-right font-semibold">{
+                            totalAmount.toLocaleString("en-PH", {minimumFractionDigits: 2,maximumFractionDigits: 2,})
+                            }
+                            </div>
                         </div>
 
                         <div className="flex justify-between pl-4 items-center gap-6 border-b border-black py-2 text-[10px]">
@@ -224,7 +237,7 @@ export default function CartForm({printRef}) {
 
                         <div className="flex justify-between px-4 items-center gap-6 py-2 text-[10px]">
                             <div className="font-semibold">Grand Total</div>
-                            <div className="w-[110px] text-right font-semibold">{grandTotalAmount}</div>
+                            <div className="w-[110px] text-right font-semibold">{grandTotalAmount.toLocaleString("en-PH", {minimumFractionDigits: 2,maximumFractionDigits: 2,})}</div>
                         </div>
 
                     </div>

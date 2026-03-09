@@ -8,10 +8,16 @@ const [view, setView] = useState("");
 const [quoteNum, setQuoteNum] = useState("-");
 
 const [quoteStatus, setQuoteStatus] = useState("draft");
-// statuses{
-//   -locked
-//   -draft
-// }
+
+    const todaysDate = new Date(Date.now() + 0 * 24 * 60 * 60 * 1000)
+    .toISOString()
+    .split("T")[0];
+
+
+    const validUntil = new Date((Date.now() + 7 * 24 * 60 * 60 * 1000))
+    .toISOString()
+    .split("T")[0];
+
 
 const [cartValue, setCartValue] = useState(() => {
   try {
@@ -20,7 +26,7 @@ const [cartValue, setCartValue] = useState(() => {
     return [];
   }
 });
-
+console.log(cartValue)
 // Persist cart
 useEffect(() => {
   localStorage.setItem("cartValue", JSON.stringify(cartValue));
@@ -34,8 +40,8 @@ const defaultQuoteDetails = {
     Loc: "",
     Proj: "",
     frName: "",
-    Qdate: "",
-    validUntil: "",
+    Qdate: todaysDate,
+    validUntil: validUntil,
     ins_charge: "0",
     del_charge: "0",
     leadTime: "",

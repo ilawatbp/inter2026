@@ -9,10 +9,12 @@ export default function CartNav({ setCartView, cartView, printRef }) {
 
   const navigate = useNavigate();
   const [openDiscountModal, setOpenDiscountModal] = useState();
+  const [openSaveModal, setOpenSaveModal] = useState();
+  const [openErrorModal, setOpenErrorModal] = useState();
+  const [errorMsg, setErrorMsg] = useState();
   const discountValue = useRef();
 
   const { cartValue, quoteDetails, setCartValue, setQuoteDetails, defaultQuoteDetails, setQuoteNum, quoteStatus, setQuoteStatus } = useShop();
-  console.log(quoteDetails)
 
   //POST http://localhost:3001/api/qinfo
 
@@ -38,9 +40,8 @@ export default function CartNav({ setCartView, cartView, printRef }) {
 
       // ✅ success
       setQuoteNum(data.QNO);
-      console.log("Inserted QNO:", data.QNO);
-      console.log("Inserted items:", data.insertedItems);
-      alert(`Saved! QNO: ${data.QNO}`);
+
+      // alert(`Saved! QNO: ${data.QNO}`);
     } catch (err) {
       console.error(err);
       alert(err.message);
@@ -70,6 +71,33 @@ export default function CartNav({ setCartView, cartView, printRef }) {
     )
     setOpenDiscountModal(false)
   }
+
+  function handleSave() {
+    if (cartValue.length == 0){
+      setOpenErrorModal(true);
+      setErrorMsg("Please Add Atleast one Item")
+      return
+    } 
+
+    for (const item of cartValue) {
+      if (item.Quantity == 0) {
+        setOpenErrorModal(true);
+        setErrorMsg("all items must be atles one quant");
+        return;
+      }
+    }
+
+    if (quoteDetails.qinfo.Attn == "" || quoteDetails.qinfo.Comp == ""){
+      setOpenErrorModal(true);
+      setErrorMsg("Please Complete the Customer Details");
+      return;
+    }
+
+
+    setOpenSaveModal(true);
+  }
+
+  
 
   const lastSavedQno = "last"
 
@@ -133,15 +161,9 @@ export default function CartNav({ setCartView, cartView, printRef }) {
               <>
                 <BrushCleaning onClick={clearAll} strokeWidth={1.5} />
                 <Save
-                  onClick={async () => {
-                    try {
-                      const data = await submitQuote();
-                      setQuoteStatus("locked")
-
-                    } catch (err) {
-                      alert(err.message)
+                  onClick={
+                    handleSave
                     }
-                  }}
                   strokeWidth={1.5} />
               </>
             )}
@@ -161,6 +183,43 @@ export default function CartNav({ setCartView, cartView, printRef }) {
           <input type="number" className="w-full h-10 rounded-2xl border border-black px-4 mt-4" ref={discountValue} />
           <button className="bg-green-500 w-36 h-8 rounded-2xl ml-auto text-white mt-4" onClick={handleDiscount}>Ok</button>
         </div>
+      </Modal>
+
+      <Modal open={openSaveModal} onClose={() => setOpenSaveModal(false)}>
+          {/* Title */}
+                    {/* Message */}
+                    <p className="text-center text-gray-600">
+                        Are you sure you want to save this quotation?
+                    </p>
+
+                    {/* Buttons */}
+                    <div className="flex justify-center gap-4 pt-2">
+                        <button
+                            className="px-5 py-2 rounded-xl border border-gray-300 hover:bg-gray-100 transition"
+                            onClick={()=> setOpenSaveModal(false)}
+                        >
+                            Cancel
+                        </button>
+
+                        <button
+                          className="px-5 py-2 rounded-xl bg-green-500 text-white hover:bg-green-600 transition"
+                          onClick={async () => {
+                            try {
+                              const data = await submitQuote();
+                              setQuoteStatus("locked")
+                              setOpenSaveModal(false);
+                            } catch (err) {
+                              alert(err.message)
+                            }
+
+                          }}
+                        >
+                            Confirm
+                        </button>
+                    </div>
+      </Modal>
+      <Modal open={openErrorModal} onClose={() => setOpenErrorModal(false)}>
+            {errorMsg}
       </Modal>
     </>
   )
