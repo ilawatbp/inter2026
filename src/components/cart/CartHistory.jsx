@@ -9,9 +9,9 @@ export default function CartHistory({setCartView}) {
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
 
-  const {setQuoteDetails, setCartValue} = useShop();
+  const {setQuoteDetails, setCartValue, setQuoteNum, setQuoteStatus} = useShop();
 
-async function loadQuotation(qno) {
+async function loadQuotation(qno, isPrinting) {
   try {
     const response = await fetch(`http://192.168.1.100:3001/api/quotation/${qno}`);
 
@@ -49,6 +49,11 @@ async function loadQuotation(qno) {
         ilawBusNameSign: data.qn?.ilawBusNameSign ?? "-",
       },
     });
+
+    if(isPrinting){
+      setQuoteNum(data.qinfo?.QNO ?? "",)
+    }
+
     console.log(data.items)
     setCartValue(
     (data.items || []).map((item) => ({
@@ -60,7 +65,6 @@ async function loadQuotation(qno) {
     console.error(err);
   }
 
-    setCartView("form")
 }
 
   const itemsPerPage = 100;
@@ -182,11 +186,12 @@ async function loadQuotation(qno) {
                         <SquarePen
                           strokeWidth={1}
                           className="hover:text-[#3cb54c] cursor-pointer hover:scale-125 h-4 w-4"
-                          onClick={() => {loadQuotation(q.QNO)}}
+                          onClick={() => {loadQuotation(q.QNO); setCartView("form");}}
                         />
                         <Printer
                           strokeWidth={1}
                           className="hover:text-[#3cb54c] cursor-pointer hover:scale-125 h-4 w-4"
+                          onClick={() => {loadQuotation(q.QNO, true); setCartView("form"); setQuoteStatus("locked");}}
                         />
                       </div>
                     </td>

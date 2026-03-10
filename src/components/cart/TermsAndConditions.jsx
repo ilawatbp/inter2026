@@ -7,7 +7,7 @@ export default function TermsAndConditions() {
     const diffInDays = diffInMs / (1000 * 60 * 60 * 24);
 
   return (
-    <section className="mt-6 text-[10px] leading-tight">
+    <section className="mt-6 text-[10px] leading-tight page-break">
       <h2 className="font-semibold underline mb-3">Terms and Conditions</h2>
 
       <div className="space-y-2">

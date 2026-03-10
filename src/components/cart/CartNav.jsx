@@ -106,18 +106,31 @@ export default function CartNav({ setCartView, cartView, printRef }) {
     contentRef: printRef,
     documentTitle: lastSavedQno ? `Quotation-${lastSavedQno}` : "Quotation",
     pageStyle: `
-      @page { size: letter; margin: 12mm; }
+      @page { size: letter; margin: 1mm; }
       @media print {
-        body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-      }
-    `,
+            body {
+              -webkit-print-color-adjust: exact;
+              print-color-adjust: exact;
+            }
+
+            .page-break {
+              break-before: page;
+              page-break-before: always;
+            }
+
+            .avoid-break {
+              break-inside: avoid;
+              page-break-inside: avoid;
+            }
+          }
+        `,
   });
 
 
 
   return (
     <>
-      <nav className="bg-[#3b4044] shadow-md text-white">
+      <nav className="bg-[#3b4044] shadow-md text-white mb-6">
         <div className="mx-auto max-w-6xl px-4 md:px-10 py-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           {/* LEFT */}
           <div className="flex items-center gap-2">

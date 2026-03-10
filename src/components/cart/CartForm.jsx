@@ -48,7 +48,7 @@ export default function CartForm({printRef}) {
 
     return (
         <>
-            <main ref={printRef} className="max-w-[8.5in] mx-auto bg-white mt-6 p-6 md:p-10 rounded-xl">
+            <main ref={printRef} className="max-w-[8.5in] mx-auto bg-white p-10 rounded-xl">
                 {/* Header Part */}
                 <section className="flex flex-row mb-2">
                     <div className="flex-1">
